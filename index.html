@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GIFTERA — Give again. Get something new. A community gift exchange marketplace.">
+<title>GIFTERA — Give again. Get something new.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="ambient-layer" aria-hidden="true"><span class="ambient a1">✦</span><span class="ambient a2">🎁</span><span class="ambient a3">✧</span><span class="ambient a4">🎀</span><span class="ambient a5">✿</span></div>
+<div class="topbar">A little less clutter. A little more joy. &nbsp; ✦ &nbsp; Welcome to a better way to exchange gifts.</div>
+<header class="wrap nav">
+<a class="brand" href="#" onclick="showPage('home');return false"><span class="brandmark">↻</span> GIFTERA</a>
+<nav class="navlinks"><a href="#" onclick="showPage('home');return false">Home</a><a href="#" onclick="showPage('market');return false">Explore gifts</a><a href="#" onclick="showPage('how');return false">How it works</a></nav>
+<div class="navactions"><button class="btn outline small" onclick="showPage('dashboard')">My account</button><button class="btn primary small" onclick="showPage('upload')">＋ List a gift</button></div>
+</header>
+
+<main>
+<section id="home" class="page active" style="padding:0">
+<div class="hero"><div class="wrap hero-grid">
+<div><div class="eyebrow">A fresh take on gifting</div><h1>Give something a second story.<br><em>Find your next favourite.</em></h1>
+<p>That extra birthday gift? The duplicate home décor? Give it a new story. Discover thoughtful finds from people in your community and exchange something you'll truly enjoy.</p>
+<div class="hero-buttons"><button class="btn primary" onclick="showPage('market')">Explore gifts <span>→</span></button><button class="btn secondary" onclick="showPage('upload')">＋ List your gift</button></div>
+<div class="trustline">✦ Community-powered &nbsp; · &nbsp; Thoughtful exchanges &nbsp; · &nbsp; Starting in Pune</div></div>
+<div class="hero-art"><div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-chip chip-left">✦ A second chance for good things</div><div class="hero-chip chip-right">↗ 2 ways to exchange</div><div class="gift-stack"><div class="giftbox"></div><div class="bow"></div><span class="floating f1">✦</span><span class="floating f2">🎁</span><span class="floating f3">✿</span><span class="floating f4">♡</span><span class="floating f5">🎀</span><span class="floating f6">✨</span></div><div class="art-card note"><strong>A gift, re-loved.</strong>Make room for a little joy.</div><div class="art-card note2"><strong>Made to be passed on</strong>Swap directly or use Gifter Points</div><div class="mini-gift mini-one">🎁</div><div class="mini-gift mini-two">🧸</div><div class="mini-gift mini-three">🎧</div></div>
+</div></div>
+<div class="section"><div class="wrap"><div class="section-head"><div><div class="kicker">Simple by design</div><h2>A new life for lovely things.</h2><p class="section-sub">A thoughtful way to pass along gifts you don't need and find something that feels just right.</p></div><button class="btn outline" onclick="showPage('how')">See how it works →</button></div>
+<div class="steps"><div class="step"><div class="step-icon">📸</div><h3>1. Share your gift</h3><p>Upload a few photos, tell us what it is and choose what you'd love in return.</p></div><div class="step"><div class="step-icon">🔎</div><h3>2. Find your match</h3><p>Discover a direct swap or browse gifts you can claim with Gifter Points.</p></div><div class="step"><div class="step-icon">📦</div><h3>3. Exchange with ease</h3><p>Once both sides confirm, arrange tracked courier delivery and enjoy your new find.</p></div></div></div></div>
+<div class="section market" style="padding-top:55px"><div class="wrap"><div class="section-head"><div><div class="kicker">A few lovely finds</div><h2>Explore the gift shelf.</h2><p class="section-sub">A sample of what your next happy discovery could look like.</p></div><button class="btn primary" onclick="showPage('market')">View all gifts →</button></div><div id="homeGifts" class="gift-grid"></div></div></div>
+<div class="section"><div class="wrap"><div class="cta"><div><h2>Ready to pass on a little happiness?</h2><p>List it on GIFTERA and let someone else discover something special.</p></div><button class="btn" onclick="showPage('upload')">List a gift →</button></div></div></div>
+</section>
+
+<section id="market" class="page"><div class="wrap"><div class="kicker">The gift shelf</div><h1 class="page-title">Find your next favourite.</h1><p class="section-sub">Browse community gifts. Sample listings are shown until real member listings are added.</p>
+<div class="field" style="max-width:420px;margin-top:22px"><input id="searchInput" placeholder="Search gifts, categories..." oninput="renderMarket()"></div>
+<div class="filters" id="filters"><button class="filter active" data-cat="All" onclick="setFilter('All',this)">All gifts</button><button class="filter" data-cat="Home" onclick="setFilter('Home',this)">Home</button><button class="filter" data-cat="Books" onclick="setFilter('Books',this)">Books</button><button class="filter" data-cat="Accessories" onclick="setFilter('Accessories',this)">Accessories</button><button class="filter" data-cat="Toys" onclick="setFilter('Toys',this)">Toys</button><button class="filter" data-cat="Games" onclick="setFilter('Games',this)">Games</button></div>
+<div id="marketGifts" class="gift-grid"></div>
+</div></section>
+
+<section id="upload" class="page"><div class="wrap"><div class="kicker">Pass it along</div><h1 class="page-title">List a gift.</h1><p class="section-sub">Tell the community about your gift. Listings in this prototype are saved only in this browser and are not publicly published.</p>
+<div class="form-card" style="max-width:760px;margin-top:25px"><form id="giftForm"><div class="form-grid">
+<div class="field"><label>Your name *</label><input name="owner" required placeholder="Your name"></div>
+<div class="field"><label>Gift name *</label><input name="title" required placeholder="e.g. Ceramic coffee set"></div>
+<div class="field"><label>Category *</label><select name="category" required><option value="">Choose category</option><option>Home</option><option>Books</option><option>Accessories</option><option>Toys</option><option>Games</option><option>Stationery</option><option>Other</option></select></div>
+<div class="field"><label>Condition *</label><select name="condition" required><option value="">Choose condition</option><option>Brand new, unopened</option><option>Brand new, open box</option><option>Unused, no original packaging</option></select></div>
+<div class="field"><label>Suggested points</label><input name="points" type="number" min="50" max="10000" placeholder="e.g. 500"></div>
+<div class="field"><label>Your PIN code *</label><input name="pincode" inputmode="numeric" pattern="[0-9]{6}" required placeholder="6-digit PIN code"></div>
+<div class="field full"><label>Description *</label><textarea name="description" required placeholder="Describe the gift, packaging and any details someone should know."></textarea></div>
+<div class="field full"><label>What would you like in return?</label><input name="wants" placeholder="e.g. Books, home décor, or open to offers"></div>
+<div class="field full"><label>Photo URL (optional for demo)</label><input name="photo" type="url" placeholder="https://..."><span class="hint">In the production website, this will be a secure photo upload.</span></div>
+</div><div class="notice">For this pilot concept, list only genuine, unused gifts that you own. All listings would require platform review before going live.</div><div class="form-actions"><button class="btn primary" type="submit">Submit gift for review →</button><button class="btn outline" type="reset">Clear form</button></div></form></div></div></section>
+
+<section id="how" class="page"><div class="wrap"><div class="kicker">Good things go around</div><h1 class="page-title">How GIFTERA works.</h1><p class="section-sub">Two simple ways to find a gift that feels right.</p>
+<div class="steps" style="margin-top:25px"><div class="step"><div class="step-icon">🎁</div><h3>Share something lovely</h3><p>List a genuine, unused gift with clear photos and details. Our team reviews each listing.</p></div><div class="step"><div class="step-icon">🔁</div><h3>Choose your kind of exchange</h3><p>Swap directly with someone who wants your gift, or use Gifter Points to claim another approved gift.</p></div><div class="step"><div class="step-icon">🚚</div><h3>Confirm and send</h3><p>Agree to the exchange and delivery charges. Courier details and tracking are shared with both sides.</p></div></div>
+<div class="form-card" style="margin-top:25px"><h3 style="margin-top:0">What are Gifter Points?</h3><p class="section-sub">Gifter Points are proposed, non-cash platform credits used to claim approved gifts. They cannot be withdrawn or transferred. In the live service, points are awarded only after a gift is verified and successfully exchanged, subject to the final terms.</p><div class="notice">This prototype does not issue real points, take payments, book couriers or create binding exchanges.</div></div>
+</div></section>
+
+<section id="dashboard" class="page"><div class="wrap"><div class="kicker">Your little corner</div><h1 class="page-title">My GIFTERA.</h1><p class="section-sub">A local demo dashboard. Your prototype listings and requests stay in this browser.</p>
+<div class="dashboard-grid"><div class="stat"><b id="statGifts">0</b><span>My listed gifts</span></div><div class="stat"><b>0</b><span>Gifter Points (demo)</span></div><div class="stat"><b id="statRequests">0</b><span>Exchange requests</span></div></div>
+<div class="panel"><h3 style="margin-top:0">My gift listings</h3><div id="myListings"><p class="section-sub">You haven't listed a gift yet.</p></div></div>
+<div class="panel" style="margin-top:16px"><h3 style="margin-top:0">My exchange requests</h3><div id="myRequests"><p class="section-sub">No exchange requests yet.</p></div></div>
+</div></section>
+</main>
+
+<footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="#" onclick="showPage('home');return false"><span class="brandmark">↻</span> GIFTERA</a><p>Give again. Get something new.<br>A little more joy, passed along.</p></div><div class="footer-links"><a href="#" onclick="showPage('market');return false">Explore gifts</a><a href="#" onclick="showPage('upload');return false">List a gift</a><a href="#" onclick="showPage('how');return false">How it works</a><a href="mailto:hello@GIFTERA.example">Contact</a></div></div><div class="copyright">© 2026 GIFTERA concept prototype. Brand name subject to trademark clearance. Demo only — no real exchanges or payments are processed.</div></div></footer>
+
+<div class="modal-backdrop" id="giftModal" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><div class="kicker">Gift details</div><button class="close" onclick="closeModal()">×</button></div><div id="modalContent"></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="script.js" defer></script>
+</body></html>
