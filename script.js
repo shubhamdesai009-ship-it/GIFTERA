@@ -5,6 +5,7 @@
 
 const SUPABASE_URL = "https://ppaseexvdprdrjupnzjh.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_9NR3AY5q3xb0tArU0Zrr5A_X20nSNnl";
+const SITE_URL = "https://giftera.pages.dev";
 
 const db = window.supabase.createClient(
     SUPABASE_URL,
@@ -16,6 +17,7 @@ let gifts = [];
 let requests = [];
 let activeFilter = "All";
 let toastTimer;
+let isPasswordRecovery = false;
 
 // ============================================
 // PAGE NAVIGATION
@@ -27,11 +29,9 @@ function showPage(id) {
     });
 
     const selectedPage = document.getElementById(id);
-
     if (!selectedPage) return;
 
     selectedPage.classList.add("active");
-
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     if (id === "market") renderMarket();
@@ -42,17 +42,194 @@ function showPage(id) {
 }
 
 // ============================================
-// AUTHENTICATION
+// AUTHENTICATION MESSAGES
 // ============================================
 
 function authMessage(message, error = false) {
     const el = document.getElementById("authMessage");
-
     if (!el) return;
 
     el.textContent = message;
     el.style.color = error ? "#b42318" : "#28734e";
 }
+
+// ============================================
+// PASSWORD RECOVERY INTERFACE
+// ============================================
+
+function createPasswordRecoveryUI() {
+    const notice = document.getElementById("authNotice");
+
+    if (!notice || document.getElementById("forgotPasswordButton")) {
+        return;
+    }
+
+    const forgotButton = document.createElement("button");
+    forgotButton.id = "forgotPasswordButton";
+    forgotButton.className = "btn outline";
+    forgotButton.type = "button";
+    forgotButton.textContent = "Forgot Password?";
+    forgotButton.style.marginTop = "10px";
+    forgotButton.onclick = sendPasswordReset;
+
+    notice.appendChild(forgotButton);
+
+    const recoveryForm = document.createElement("div");
+    recoveryForm.id = "passwordRecoveryPanel";
+    recoveryForm.className = "form-card";
+    recoveryForm.style.cssText =
+        "display:none;max-width:760px;margin-top:20px;";
+
+    recoveryForm.innerHTML = `
+        <h3 style="margin-top:0">Create a new password</h3>
+        <p class="section-sub">
+            Enter and confirm your new GIFTERA account password.
+        </p>
+
+        <div class="field">
+            <label>New password</label>
+            <input
+                id="newPassword"
+                type="password"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Enter new password"
+            >
+        </div>
+
+        <div class="field" style="margin-top:14px">
+            <label>Confirm new password</label>
+            <input
+                id="confirmNewPassword"
+                type="password"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Confirm new password"
+            >
+        </div>
+
+        <div class="form-actions">
+            <button
+                class="btn primary"
+                type="button"
+                onclick="updatePassword()"
+            >
+                Save New Password
+            </button>
+        </div>
+
+        <p id="resetMessage" class="hint" aria-live="polite"></p>
+    `;
+
+    notice.insertAdjacentElement("afterend", recoveryForm);
+}
+
+function resetMessage(message, error = false) {
+    const el = document.getElementById("resetMessage");
+    if (!el) return;
+
+    el.textContent = message;
+    el.style.color = error ? "#b42318" : "#28734e";
+}
+
+function showPasswordRecoveryForm() {
+    createPasswordRecoveryUI();
+
+    const notice = document.getElementById("authNotice");
+    const panel = document.getElementById("passwordRecoveryPanel");
+
+    if (notice) notice.style.display = "block";
+    if (panel) panel.style.display = "block";
+
+    isPasswordRecovery = true;
+    showPage("upload");
+
+    resetMessage("Enter your new password below.");
+}
+
+// ============================================
+// SEND PASSWORD RESET EMAIL
+// ============================================
+
+async function sendPasswordReset() {
+    const email = document.getElementById("authEmail")?.value.trim();
+
+    if (!email) {
+        authMessage("Please enter your registered email address first.", true);
+        return;
+    }
+
+    authMessage("Sending password reset email...");
+
+    try {
+        const { error } = await db.auth.resetPasswordForEmail(email, {
+            redirectTo: SITE_URL + "/"
+        });
+
+        if (error) throw error;
+
+        authMessage(
+            "Password reset email sent! Check your inbox and spam folder."
+        );
+
+    } catch (error) {
+        console.error("Password reset email error:", error);
+        authMessage(error.message, true);
+    }
+}
+
+// ============================================
+// SAVE NEW PASSWORD
+// ============================================
+
+async function updatePassword() {
+    const password = document.getElementById("newPassword")?.value || "";
+    const confirmPassword =
+        document.getElementById("confirmNewPassword")?.value || "";
+
+    if (password.length < 6) {
+        resetMessage(
+            "Your password must contain at least 6 characters.",
+            true
+        );
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        resetMessage("The passwords do not match.", true);
+        return;
+    }
+
+    resetMessage("Updating your password...");
+
+    try {
+        const { data, error } = await db.auth.updateUser({
+            password: password
+        });
+
+        if (error) throw error;
+
+        currentUser = data.user || currentUser;
+        isPasswordRecovery = false;
+
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmNewPassword").value = "";
+
+        resetMessage("Your password has been changed successfully!");
+
+        updateAuthDisplay();
+
+        toast("GIFTERA password updated successfully.");
+
+    } catch (error) {
+        console.error("Password update error:", error);
+        resetMessage(error.message, true);
+    }
+}
+
+// ============================================
+// AUTHENTICATION DISPLAY
+// ============================================
 
 function updateAuthDisplay() {
     const status = document.getElementById("authStatus");
@@ -68,7 +245,7 @@ function updateAuthDisplay() {
             status.textContent = "Signed in as " + currentUser.email;
         }
 
-        if (notice) {
+        if (notice && !isPasswordRecovery) {
             notice.style.display = "none";
         }
 
@@ -98,6 +275,10 @@ function updateAuthDisplay() {
     }
 }
 
+// ============================================
+// SIGN UP
+// ============================================
+
 async function signUp() {
     const name = document.getElementById("authName").value.trim();
     const email = document.getElementById("authEmail").value.trim();
@@ -105,7 +286,7 @@ async function signUp() {
 
     if (!name || !email || password.length < 6) {
         authMessage(
-            "Enter your full name, a valid email and a password of at least 6 characters.",
+            "Enter your full name, valid email and password of at least 6 characters.",
             true
         );
         return;
@@ -133,7 +314,7 @@ async function signUp() {
             updateAuthDisplay();
         } else {
             authMessage(
-                "Account created! Check your email for the confirmation link, then sign in."
+                "Account created! Check your email for confirmation, then sign in."
             );
         }
 
@@ -141,6 +322,10 @@ async function signUp() {
         authMessage(error.message, true);
     }
 }
+
+// ============================================
+// SIGN IN
+// ============================================
 
 async function signIn() {
     const email = document.getElementById("authEmail").value.trim();
@@ -162,7 +347,6 @@ async function signIn() {
         if (error) throw error;
 
         currentUser = data.user;
-
         authMessage("Welcome back to GIFTERA!");
 
         updateAuthDisplay();
@@ -174,6 +358,10 @@ async function signIn() {
     }
 }
 
+// ============================================
+// SIGN OUT
+// ============================================
+
 async function signOut() {
     const { error } = await db.auth.signOut();
 
@@ -184,6 +372,7 @@ async function signOut() {
 
     currentUser = null;
     gifts = [];
+    isPasswordRecovery = false;
 
     updateAuthDisplay();
     renderHome();
@@ -267,7 +456,6 @@ function card(g) {
 
 function renderHome() {
     const container = document.getElementById("homeGifts");
-
     if (!container) return;
 
     container.innerHTML = gifts.slice(0, 4).map(card).join("");
@@ -280,7 +468,6 @@ function renderHome() {
 
 function renderMarket() {
     const container = document.getElementById("marketGifts");
-
     if (!container) return;
 
     const search = (
@@ -314,7 +501,6 @@ function setFilter(category, element) {
     });
 
     element.classList.add("active");
-
     renderMarket();
 }
 
@@ -324,7 +510,6 @@ function setFilter(category, element) {
 
 function openGift(id) {
     const gift = gifts.find(g => String(g.id) === String(id));
-
     if (!gift) return;
 
     const visual = gift.photo
@@ -407,10 +592,10 @@ if (giftForm) {
 
         const giftData = {
             user_id: currentUser.id,
-            title: title,
-            description: description,
-            category: category,
-            condition: condition,
+            title,
+            description,
+            category,
+            condition,
             estimated_value: points,
             exchange_type: "direct",
             image_path: photo || null,
@@ -437,7 +622,6 @@ if (giftForm) {
             toast("Gift submitted successfully! It is awaiting review.");
 
             await renderDashboard();
-
             showPage("dashboard");
 
         } catch (error) {
@@ -484,6 +668,7 @@ async function renderDashboard() {
 
     if (error) {
         console.error("Dashboard error:", error);
+
         if (listings) {
             listings.innerHTML =
                 '<p class="section-sub">Unable to load your listings. Please try again.</p>';
@@ -535,7 +720,6 @@ function escapeHtml(value) {
 
 function toast(message) {
     const element = document.getElementById("toast");
-
     if (!element) return;
 
     element.textContent = message;
@@ -604,7 +788,6 @@ function observeMotion(root = document) {
 function updateScrollProgress() {
     const documentElement = document.documentElement;
     const max = documentElement.scrollHeight - window.innerHeight;
-
     const progress = document.getElementById("scrollProgress");
 
     if (progress) {
@@ -622,6 +805,8 @@ window.addEventListener("scroll", updateScrollProgress, {
 // ============================================
 
 async function initializeGiftera() {
+    createPasswordRecoveryUI();
+
     try {
         const { data, error } = await db.auth.getSession();
 
@@ -630,11 +815,18 @@ async function initializeGiftera() {
         currentUser = data.session?.user || null;
 
         updateAuthDisplay();
-
         await loadGifts();
 
         if (currentUser) {
             await renderDashboard();
+        }
+
+        // Handle a recovery link that has returned to the live website.
+        if (
+            window.location.hash.includes("type=recovery") ||
+            new URLSearchParams(window.location.search).get("type") === "recovery"
+        ) {
+            showPasswordRecoveryForm();
         }
 
     } catch (error) {
@@ -643,9 +835,18 @@ async function initializeGiftera() {
     }
 }
 
-// Listen for login, logout and session changes.
+// ============================================
+// SUPABASE AUTH STATE LISTENER
+// ============================================
+
 db.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
+
+    if (event === "PASSWORD_RECOVERY") {
+        showPasswordRecoveryForm();
+        updateAuthDisplay();
+        return;
+    }
 
     updateAuthDisplay();
 
@@ -653,12 +854,18 @@ db.auth.onAuthStateChange((event, session) => {
         setTimeout(async () => {
             await loadGifts();
 
-            if (document.getElementById("dashboard").classList.contains("active")) {
+            if (
+                document.getElementById("dashboard")?.classList.contains("active")
+            ) {
                 await renderDashboard();
             }
         }, 0);
     }
 });
+
+// ============================================
+// OBSERVERS
+// ============================================
 
 const motionMutation = new MutationObserver(() => {
     observeMotion();
@@ -675,7 +882,11 @@ const motionMutation = new MutationObserver(() => {
     }
 });
 
+// ============================================
+// INITIAL PAGE SETUP
+// ============================================
+
+createPasswordRecoveryUI();
 observeMotion();
 updateScrollProgress();
-
 initializeGiftera();
